@@ -1,0 +1,539 @@
+<html>
+
+    <head>
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-QQWF4ZYCRF"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-QQWF4ZYCRF');
+        </script>
+        <style>
+
+            body {
+                margin: 0px;
+                padding: 0px;
+                overflow: auto;
+            }
+
+            .body {
+                position: absolute;
+                width: calc(100% - 1px);
+                height: calc(100% - 1px);
+                min-width: 774px;
+                min-height: 654;
+                overflow: hidden;
+            }
+
+            .page {
+
+                position: absolute;
+
+                top: 50%;
+
+                left: 50%;
+
+                padding: 25px;
+
+                border: 2px solid gray;
+
+                width: 720px;
+
+                height: auto;
+
+                transform: translate(-50%,-50%);
+
+            }
+
+            .item {
+
+                box-sizing: border-box;
+
+                float:left;
+
+                margin:10px;
+
+                padding:10px;
+
+                width:700px;
+
+                height:50px;
+
+                font-size: 20px;
+
+                line-height: 30px;
+
+                background-color: white;
+
+                text-align: center;
+
+            }
+
+            .button {
+                background-color:rgb(230, 230, 230);
+                font-weight: 600;
+            }
+
+            .input {
+                background-color:rgb(224, 238, 255);
+                color: rgb(97, 97, 255);
+                border: 2px solid blue;
+            }
+
+            /* .input1 {
+
+            } */
+
+            
+
+            .button1 {
+
+                color: #444444;
+
+                border: 2px solid #444444;
+
+                outline-color: transparent;
+
+            }
+
+            .input2 {
+                width: 340px;
+            }
+
+            .input3 {
+                width: 340px;
+            }
+
+            .button2 {
+
+                color: #444444;
+
+                border: 2px solid #444444;
+
+                outline-color: transparent;
+
+            }
+
+            .result {
+
+                color: #00bb00;
+
+                border: 2px solid #00bb00;
+
+                height:300px;
+
+                overflow: auto;
+
+                padding: 20px;
+
+            }
+
+        </style>
+
+    </head>
+
+    <body>
+        
+        <script type="text/javascript">
+
+            function click1(){
+
+                if(document.getElementsByClassName("input1")[0].value == "Cap Code"){
+
+                    error("Please enter a Cap Code");
+
+                    return;
+
+                }
+
+                let result = lookup(document.getElementsByClassName("input1")[0].value);
+
+                if((typeof result) == "string"){
+
+                    error(result);
+
+                } else {
+
+                    let a = "Tone A = "+result.type+" Code "+result.codeA+", Frequency "+result.frequencyA+" Hz";
+
+                    let b = "Tone B = "+result.type+" Code "+result.codeB+", Frequency "+result.frequencyB+" Hz";
+
+                    success("<br />"+a+"<br />"+b)
+
+                }
+
+            }
+
+            function click2(){
+
+                let freqA = document.getElementsByClassName("input2")[0].value;
+
+                let freqB = document.getElementsByClassName("input3")[0].value;
+
+                if(freqA == "Tone A Frequency"){
+
+                    error("Please enter Tone A Frequency");
+
+                    return;
+
+                }
+
+                if(freqB == "Tone B Frequency"){
+
+                    error("Please enter Tone B Frequency");
+
+                    return;
+
+                }
+
+                
+
+                if(isNaN(freqA)){
+
+                    error("Could not read Tone A Frequency");
+
+                    return;
+
+                }
+
+                if(isNaN(freqB)){
+
+                    error("Could not read Tone B Frequency");
+
+                    return;
+
+                }
+
+                let allResults = [];
+
+                for(let i = 0; i < 65536; i++){
+
+                    let hex = ("0000" + i.toString(16)).substr(-4);
+
+                    let result = lookup(hex);
+
+                    if(typeof result != "string"){
+
+                        allResults.push({dis:(Math.abs(freqA-result.frequencyA)+Math.abs(freqB-result.frequencyB)),cap:(hex),freqA:(result.frequencyA),freqB:(result.frequencyB)});
+
+                    }
+
+                }
+
+                allResults.sort(function(a,b){return a.dis-b.dis;});
+
+                let text = "";
+
+                for(let i = 0; i < 20; i++){
+
+                    if(i>0){
+
+                        text += "<br />";
+
+                    }
+
+                    text += "Cap Code "+allResults[i].cap+": Tone A = "+allResults[i].freqA+" Hz, Tone B = "+allResults[i].freqB+" Hz";
+
+                }
+
+                success(text);
+
+            }
+
+            function error(text){
+
+                document.getElementsByClassName("result")[0].style.color = "#dd4400";
+
+                document.getElementsByClassName("result")[0].style.border = "2px solid #dd4400";
+
+                document.getElementsByClassName("result")[0].innerHTML = "<b>"+text+"</b>";
+
+            }
+
+            function success(text){
+
+                document.getElementsByClassName("result")[0].style.color = "#00bb00";
+
+                document.getElementsByClassName("result")[0].style.border = "2px solid #00bb00";
+
+                document.getElementsByClassName("result")[0].innerHTML = text;
+
+            }
+
+            function lookupPrint(number){
+
+                let result = lookup(number);
+
+                if((typeof result) == "string"){
+
+                    console.error(result);
+
+                } else {
+
+                    console.log("Tone A = "+result.type+" Code "+result.codeA+", Frequency "+result.frequencyA+" Hz");
+
+                    console.log("Tone B = "+result.type+" Code "+result.codeB+", Frequency "+result.frequencyB+" Hz");
+
+                }
+
+            }
+
+            function lookup(number){
+
+                number = ""+number;
+
+                number = number.toUpperCase();
+
+                if(number.length > 4){
+
+                    return "That code is too long.";
+
+                }
+
+                if(number.length < 4){
+
+                    return "That code is too short.";
+
+                }
+
+                if(number.match(/^[0-9a-fA-F]{4}$/)===null){
+
+                    return "That code contains invalid symbols.";
+
+                }
+
+                
+
+                let first2 = number.substr(0,2);
+
+                let toneGroups = table5(first2);
+
+                if(toneGroups==undefined){
+
+                    return "The first two digits of that code are not valid.";
+
+                }
+
+                let toneGroupA = toneGroups[0];
+
+                let toneGroupB = toneGroups[1];
+
+                let toneNumberA = number.charAt(2);
+
+                let toneNumberB = number.charAt(3);
+
+                let type = "";
+
+                let infoA = [];
+
+                let infoB = [];
+
+                if((+first2)<=49){
+
+                    type = "Tone";
+
+                    infoA = table2(toneGroupA,toneNumberA);
+
+                    infoB = table2(toneGroupB,toneNumberB);
+
+                } else {
+
+                    type = "Reed";
+
+                    infoA = table4(toneGroupA,toneNumberA);
+
+                    infoB = table4(toneGroupB,toneNumberB);
+
+                }
+
+                if(infoA==undefined || infoB==undefined){
+
+                    return "The "+(infoA==undefined?"third":"fourth")+" digit of that code is not valid.";
+
+                }
+
+                return {type:type,codeA:infoA[0],frequencyA:infoA[1],codeB:infoB[0],frequencyB:infoB[1]}
+
+            }
+
+            function table5(val){
+
+                let table = {
+
+                    "10":["4","2"],
+
+                    "11":["1","1"],
+
+                    "12":["2","2"],
+
+                    "13":["1","2"],
+
+                    "14":["4","4"],
+
+                    "15":["5","5"],
+
+                    "16":["2","1"],
+
+                    "17":["4","5"],
+
+                    "18":["5","4"],
+
+                    "19":["2","4"],
+
+                    "20":["6","6"],
+
+                    "21":["1","5"],
+
+                    "22":["5","1"],
+
+                    "23":["1","4"],
+
+                    "24":["4","1"],
+
+                    "25":["2","5"],
+
+                    "26":["5","2"],
+
+                    "31":["1","3"],
+
+                    "32":["3","1"],
+
+                    "33":["2","3"],
+
+                    "34":["3","2"],
+
+                    "35":["3","4"],
+
+                    "36":["4","3"],
+
+                    "37":["3","5"],
+
+                    "38":["5","3"],
+
+                    "39":["3","3"],
+
+                    "40":["6","1"],
+
+                    "41":["6","2"],
+
+                    "42":["6","3"],
+
+                    "43":["6","4"],
+
+                    "44":["6","5"],
+
+                    "45":["1","6"],
+
+                    "46":["2","6"],
+
+                    "47":["3","6"],
+
+                    "48":["4","6"],
+
+                    "49":["5","6"],
+
+                    "60":["GE A","GE A"],
+
+                    "66":["GE B","GE B"],
+
+                    "68":["GE C","GE C"],
+
+                    "99":["Z","Z"],
+
+                };
+
+                return table[val];
+
+            }
+
+            function table2(toneGroup, toneNumber){
+
+                let table = {
+
+                    "1:1":["111","349"],"2:1":["121","600.9"],"3:1":["138","288.5"],"4:1":["141","339.6"],"5:1":["151","584.8"],"6:1":["191","1153.4"],"10:1":["170","1472.9"],"11:1":["200*","1930.2"],
+
+                    "1:2":["112","368.5"],"2:2":["122","634.5"],"3:2":["108","296.5"],"4:2":["142","358.6"],"5:2":["152","617.4"],"6:2":["192","1185.2"],"10:2":["171","1513.5"],"11:2":["201*","1989"],
+
+                    "1:3":["113","389"],"2:3":["123","669.9"],"3:3":["139","304.7"],"4:3":["143","378.6"],"5:3":["153","651.9"],"6:3":["193","1217.8"],"10:3":["172","1555.2"],"11:3":["202*","2043.8"],
+
+                    "1:4":["114","410.8"],"2:4":["124","707.3"],"3:4":["109","313"],"4:4":["144","399.8"],"5:4":["154","688.3"],"6:4":["194","1251.4"],"10:4":["173","1598"],"11:4":["203*","2094.5"],
+
+                    "1:5":["115","433.7"],"2:5":["125","746.8"],"3:5":["160","953.7"],"4:5":["145","422.1"],"5:5":["155","726.8"],"6:5":["195","1285.8"],"10:5":["174","1642"],"11:5":["204*","2155.6"],
+
+                    "1:6":["116","457.9"],"2:6":["126","788.5"],"3:6":["130","979.9"],"4:6":["146","445.7"],"5:6":["156","767.4"],"6:6":["196","1321.2"],"10:6":["175","1687.2"],"11:6":["205*","2212.2"],
+
+                    "1:7":["117","483.5"],"2:7":["127","832.5"],"3:7":["161","1006.9"],"4:7":["147","470.5"],"5:7":["157","810.2"],"6:7":["197","1357.6"],"10:7":["176*","1733.7"],"11:7":["206","2271.7"],
+
+                    "1:8":["118","510.5"],"2:8":["128","879"],"3:8":["131","1034.7"],"4:8":["148","496.8"],"5:8":["158","855.5"],"6:8":["198","1395"],"10:8":["177*","1781.5"],"11:8":["207","2334.6"],
+
+                    "1:9":["119","539"],"2:9":["129","928.1"],"3:9":["162","1063.2"],"4:9":["149","524.6"],"5:9":["159","903.2"],"6:9":["199","1433.4"],"10:9":["178*","1830.5"],"11:9":["208","2401"],
+
+                    "1:0":["110","330.5"],"2:0":["120","569.1"],"3:0":["189","1092.4"],"4:0":["140","321.7"],"5:0":["150","553.9"],"6:0":["190","1122.5"],"10:0":["179*","1881"],"11:0":["209","2468.2"],
+
+                };
+
+                return table[toneGroup+":"+toneNumber];
+
+            }
+
+            function table4(toneSeries, toneNumber){
+
+                let table = {
+
+                    "A:0":["CA","358.9"],"B:0":["CB","371.5"],"Z:0":["CZ","346.7"],"GE A:0":["","682.5"],"GE B:0":["","652.5"],"GE C:0":["","667.5"],
+
+                    "A:1":["DA","398.1"],"B:1":["DB","412.1"],"Z:1":["DZ","384.6"],"GE A:1":["","592.5"],"GE B:1":["","607.5"],"GE C:1":["","712.5"],
+
+                    "A:2":["EA","441.6"],"B:2":["EB","457.1"],"Z:2":["EZ","426.6"],"GE A:2":["","757.5"],"GE B:2":["","787.5"],"GE C:2":["","772.5"],
+
+                    "A:3":["FA","489.8"],"B:3":["FB","507"],"Z:3":["FZ","473.2"],"GE A:3":["","802.5"],"GE B:3":["","832.5"],"GE C:3":["","817.5"],
+
+                    "A:4":["GA","543.3"],"B:4":["GB","562.3"],"Z:4":["GZ","524.8"],"GE A:4":["","847.5"],"GE B:4":["","877.5"],"GE C:4":["","862.5"],
+
+                    "A:5":["HA","602.6"],"B:5":["HB","623.7"],"Z:5":["HZ","582.1"],"GE A:5":["","892.5"],"GE B:5":["","922.5"],"GE C:5":["","907.5"],
+
+                    "A:6":["JA","668.3"],"B:6":["JB","691.8"],"Z:6":["JZ","645.7"],"GE A:6":["","937.5"],"GE B:6":["","967.5"],"GE C:6":["","952.5"],
+
+                    "A:7":["KA","741.3"],"B:7":["KB","767.4"],"Z:7":["KZ","716.1"],"GE A:7":["","547.5"],"GE B:7":["","517.5"],"GE C:7":["","532.5"],
+
+                    "A:8":["LA","822.2"],"B:8":["LB","851.1"],"Z:8":["LZ","794.3"],"GE A:8":["","727.5"],"GE B:8":["","562.5"],"GE C:8":["","577.5"],
+
+                    "A:9":["MA","912"],"B:9":["MB","944.1"],"Z:9":["MZ","881"],"GE A:9":["","637.5"],"GE B:9":["","697.5"],"GE C:9":["","622.5"],
+
+                    "A:A":["","1011.6"],"B:A":["","1047.1"],"Z:A":["","977.2"],"GE A:A":["",""],"GE B:A":["",""],"GE C:A":["",""],
+
+                    "A:B":["","1122.1"],"B:B":["","1161.4"],"Z:B":["","1084"],"GE A:B":["",""],"GE B:B":["",""],"GE C:B":["",""],
+
+                };
+
+                return table[toneSeries+":"+toneNumber];
+
+            }
+
+        </script>
+
+        <div class="body">
+            <div class="page">
+
+                <input class="item input input1" type="text" value="Cap Code" onfocus="if(this.value=='Cap Code')this.value='';" onblur="if(this.value=='')this.value='Cap Code';" />
+
+                <button class="item button button1" onclick="click1();">Convert Cap Code to Frequencies</button>
+
+                <input class="item input input2" type="text" value="Tone A Frequency" onfocus="if(this.value=='Tone A Frequency')this.value='';" onblur="if(this.value=='')this.value='Tone A Frequency';" />
+
+                <input class="item input input3" type="text" value="Tone B Frequency" onfocus="if(this.value=='Tone B Frequency')this.value='';" onblur="if(this.value=='')this.value='Tone B Frequency';" />
+
+                <button class="item button button2" onclick="click2();">Convert Frequencies to Cap Code</button>
+
+                <div class="item result">
+                    <br />Please enter a Cap Code or A and B<br />frequencies in the blue boxes above and use the<br />grey convert buttons to search for corresponding<br />Cap Code and frequency values.
+                </div>
+
+            </div>
+        </div>
+
+    </body>
+
+</html>
