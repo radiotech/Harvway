@@ -164,14 +164,12 @@
 
                                 let regex = /^([^,]+),(?:[^,]*,){2}(-?\d*\.?\d*),(-?\d*\.?\d*),(?:[^,]*,){16}(\d+),(\d+),(\d+),(\d+)$/gm;
                                 let match;
+                                let lines = [];
                                 while((match = regex.exec(binary)) !== null){
                                     let dateParts = /^(\d+)\/(\d+)\/(\d+) (\d+):(\d+):(\d+)\.(\d+)$/g.exec(match[1]);
                                     if(dateParts != null){
                                         let date = (new Date(parseInt(dateParts[1]),parseInt(dateParts[2])-1,parseInt(dateParts[3]),parseInt(dateParts[4]),parseInt(dateParts[5]),parseInt(dateParts[6]),parseInt(dateParts[7])*10)).getTime();
                                         if(date < startDate){
-                                            if(Number.isFinite(startDate)){
-                                                throw new Error("CSV contains dates that are out of order");
-                                            }
                                             startDate = date;
                                             startDateParts = dateParts;
                                         }
@@ -180,14 +178,18 @@
                                             endDateParts = dateParts;
                                         }
 
-                                        let secFraction = Math.floor((date-startDate)/10);
-                                        let sec = Math.floor(secFraction/100);
-                                        let minutes = Math.floor(sec/60);
-                                        let hours = Math.floor(minutes/60);
-                                        let days = Math.floor(hours/24);
-                                        result = days+','+hours%24+','+minutes%60+','+sec%60+','+secFraction%100+','+Math.round(Math.abs(parseInt(match[2])))+','+Math.round(Math.abs(parseInt(match[3])))+','+(1+(parseInt(match[4])<<3)+(parseInt(match[6])<<7))+','+((parseInt(match[5])<<3)+(parseInt(match[7])<<7))+',0,0,0,0\r\n' + result;
+                                        lines.push([date,match[2],match[3],match[4],match[5],match[6],match[7]]);
                                     }
                                 }
+
+                                lines.sort(function(a,b){return a[0]-b[0];}).forEach(function(x){
+                                    let secFraction = Math.floor((x[0]-startDate)/10);
+                                    let sec = Math.floor(secFraction/100);
+                                    let minutes = Math.floor(sec/60);
+                                    let hours = Math.floor(minutes/60);
+                                    let days = Math.floor(hours/24);
+                                    result = days+','+hours%24+','+minutes%60+','+sec%60+','+secFraction%100+','+Math.round(Math.abs(parseInt(x[1])))+','+Math.round(Math.abs(parseInt(x[2])))+','+(1+(parseInt(x[3])<<3)+(parseInt(x[5])<<7))+','+((parseInt(x[4])<<3)+(parseInt(x[6])<<7))+',0,0,0,0\r\n' + result;
+                                })
 
                                 result = '"Alcatel MDR-8000 AGC Data v1.2"\r\n"MPT","MDR-9500","1.2","' +
                                 parseInt(startDateParts[2])+'/'+parseInt(startDateParts[3])+'/'+startDateParts[1]+' '+((parseInt(startDateParts[4])-1)%12+1)+':'+startDateParts[5]+':'+startDateParts[6]+' '+((parseInt(startDateParts[4])%24)>11?'PM':'AM')+
